@@ -1,16 +1,19 @@
 const platformDefaults = {}
 
-switch (require('os').platform()) {
+const platform = require('os').platform()
+const homedir = require('os').homedir()
+
+switch (platform) {
 case 'win32':
   platformDefaults.dosBoxExePath = 'C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe'
-  platformDefaults.installDirPathBase = 'C:\\dos\\_iadoslauncher\\'
+  platformDefaults.installDirPathBase = 'C:\\dos\\_iadoslauncher-games\\'
   platformDefaults.downloadDirPath = 'C:\\dos\\_iadoslauncher-temp\\'
   break
 
 default:
   platformDefaults.dosBoxExePath = 'dosbox'
-  platformDefaults.installDirPathBase = '~/iadoslauncher'
-  platformDefaults.downloadDirPath = '~/iadoslauncher-temp'
+  platformDefaults.installDirPathBase = homedir + '/iadoslauncher-games/'
+  platformDefaults.downloadDirPath = homedir + '/iadoslauncher-temp/'
   break
 }
 
@@ -38,7 +41,7 @@ export const state = () => ({
     label: 'Installation directory',
     description: 'Directory in which games installed by this app are stored',
     default: platformDefaults.installDirPathBase,
-    value: 'C:\\dos\\_iadoslauncher\\'
+    value: 'C:\\dos\\_iadoslauncher-games\\'
   },
   downloadDirPath: {
     label: 'Download directory',
@@ -50,6 +53,7 @@ export const state = () => ({
 
 export const mutations = {
   update (state, payload) {
+    // todo: ensure paths end with /
     for (const key in payload) {
       if (state[key].default instanceof Array && typeof (payload[key].value) === 'string') {
         payload[key].value = payload[key].value.split(',')

@@ -68,6 +68,7 @@ export default {
       addGame: 'games/add'
     }),
     fetchInstalledGames () {
+      // todo: if path points to a directory which contains other files than games, this will cause issues
       fs.readdirSync(this.settings.installDirPathBase.value).forEach(file => {
         this.gamesInstalled.push(file)
       })

@@ -188,7 +188,12 @@ export default {
       })
     },
     play () {
-      const cmd = `"${this.settings.dosBoxExePath.value}" "${this.settings.installDirPathBase.value}${this.game.identifier}\\${this.game.metadata.metadata.emulator_start.replace('/', '\\')}" ${this.settings.dosBoxFlags.value.join(' ')}`
+      let cmd = ''
+      if (require('os').platform() === 'win32') {
+        cmd = `"${this.settings.dosBoxExePath.value}" "${this.settings.installDirPathBase.value}${this.game.identifier}\\${this.game.metadata.metadata.emulator_start.replace('/', '\\')}" ${this.settings.dosBoxFlags.value.join(' ')}`
+      } else {
+        cmd = `"${this.settings.dosBoxExePath.value}" "${this.settings.installDirPathBase.value}${this.game.identifier}/${this.game.metadata.metadata.emulator_start}" ${this.settings.dosBoxFlags.value.join(' ')}`
+      }
       console.log(cmd)
       exec(cmd, (error, stdout, stderr) => {
         if (error) {
