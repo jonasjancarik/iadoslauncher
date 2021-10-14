@@ -22,8 +22,9 @@ This is a very early version, so a lot of stuff is missing.
 
 Anyway, here is a list of known issues which should be fixed as a matter of priority:
 
-- Installing games fails on Linux (`no such file or directory, mkdir '~/iadoslauncher-temp'`), untested on Mac OS
-- Setting values are not set to platform defaults until 'use default' is clicked in settings
+- Installing and running games is untested on macOS
+- Settings values are not set to platform defaults until 'use default' is clicked in settings
+- `-fullscreen` flag doesn't seem to work properly on Linux (Linux Mint 20.2) - game is not scaled; untested on macOS
 
 
 ## electron-nuxt
