@@ -25,6 +25,7 @@ Anyway, here is a list of known issues which should be fixed as a matter of prio
 - Installing and running games is untested on macOS
 - Settings values are not set to platform defaults until 'use default' is clicked in settings
 - `-fullscreen` flag doesn't seem to work properly on Linux (Linux Mint 20.2) - game is not scaled; untested on macOS
+- Search is not implemented
 
 
 ## electron-nuxt
