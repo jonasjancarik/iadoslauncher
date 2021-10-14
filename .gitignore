@@ -1,0 +1,7 @@
+stderr.txt
+stdout.txt
+.nuxt
+dist
+build/*
+!build/icons
+node_modules
