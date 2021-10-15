@@ -13,7 +13,7 @@ case 'win32':
 default:
   platformDefaults.dosBoxExePath = 'dosbox'
   platformDefaults.installDirPathBase = homedir + '/iadoslauncher-games/'
-  platformDefaults.downloadDirPath = homedir + '/iadoslauncher-temp/'
+  platformDefaults.downloadDirPath = '/tmp/iadoslauncher/'
   break
 }
 
@@ -22,7 +22,7 @@ export const state = () => ({
     label: 'DOSBox Executable Path',
     description: 'Location of the DOSBox .exe file - on Mac OS and Linux this should probably be just "dosbox"',
     default: platformDefaults.dosBoxExePath,
-    value: 'C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe'
+    value: platformDefaults.dosBoxExePath
   },
   dosBoxFlags: {
     label: 'DOSBox command line parameters',
@@ -41,13 +41,13 @@ export const state = () => ({
     label: 'Installation directory',
     description: 'Directory in which games installed by this app are stored',
     default: platformDefaults.installDirPathBase,
-    value: 'C:\\dos\\_iadoslauncher-games\\'
+    value: platformDefaults.installDirPathBase
   },
   downloadDirPath: {
     label: 'Download directory',
     description: 'Path to the (temporary) directory to which the games are downloaded before being installed',
     default: platformDefaults.downloadDirPath,
-    value: 'C:\\dos\\_iadoslauncher-temp\\'
+    value: platformDefaults.downloadDirPath
   }
 })
 
