@@ -180,6 +180,7 @@ export default {
       ipcRenderer.on('installEnd', () => {
         this.isInstalled = true
         ipcRenderer.removeAllListeners('installEnd')
+        // todo: clean up - remove downloaded zip file
       })
       ipcRenderer.on('installError', (event, error) => {
         this.isInstalled = false
