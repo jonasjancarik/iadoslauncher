@@ -2,17 +2,18 @@ const platformDefaults = {}
 
 const platform = require('os').platform()
 const homedir = require('os').homedir()
+const tempdir = require('os').tmpdir()
 
 switch (platform) {
 case 'win32':
   platformDefaults.dosBoxExePath = 'C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe'
-  platformDefaults.installDirPathBase = 'C:\\dos\\_iadoslauncher-games\\'
-  platformDefaults.downloadDirPath = 'C:\\dos\\_iadoslauncher-temp\\'
+  platformDefaults.installDirPathBase = 'C:\\Program Files (x86)\\IADOS Launcher\\games\\'
+  platformDefaults.downloadDirPath = tempdir + '\\IADOS Launcher\\'
   break
 
 default:
   platformDefaults.dosBoxExePath = 'dosbox'
-  platformDefaults.installDirPathBase = homedir + '/iadoslauncher-games/'
+  platformDefaults.installDirPathBase = homedir + '/.iadoslauncher/games/'
   platformDefaults.downloadDirPath = '/tmp/iadoslauncher/'
   break
 }
