@@ -14,7 +14,8 @@ module.exports = {
   },
   loading: false,
   plugins: [
-    { src: '~/plugins/vuex-persist', ssr: false }
+    { src: '~/plugins/vuex-persist', ssr: false },
+    { src: '~/plugins/mixinCommonMethods', ssr: false }
   ],
   buildModules: [
     // '@nuxtjs/google-fonts'

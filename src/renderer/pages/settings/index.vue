@@ -63,6 +63,7 @@ export default
     this.loadSettings()
   },
   methods: {
+    // todo: use this.checkDosBoxInstallation() to detect DOSBox installation
     ...mapMutations({
       updateSettings: 'settings/update'
     }),
