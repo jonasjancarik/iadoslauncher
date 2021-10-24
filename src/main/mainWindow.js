@@ -48,7 +48,13 @@ ipcMain.on('downloadFile', function (event, data) {
 
 ipcMain.on('installGame', function (event, data) {
   if (!fs.existsSync(data.installDirPathBase)) {
-    fs.mkdirSync(data.installDirPathBase)
+    try {
+      fs.mkdirSync(data.installDirPathBase, { recursive: true })
+    } catch (error) {
+      console.log(`Could not create the install folder at ${data.installDirPathBase}`)
+      console.log(error)
+      throw error
+    }
   }
 
   yauzl.open(data.filePath, function (err, zipfile) {

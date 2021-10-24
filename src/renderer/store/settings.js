@@ -4,10 +4,12 @@ const platform = require('os').platform()
 const homedir = require('os').homedir()
 const tempdir = require('os').tmpdir()
 
+// process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
+
 switch (platform) {
 case 'win32':
   platformDefaults.dosBoxExePath = 'C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe'
-  platformDefaults.installDirPathBase = 'C:\\Program Files (x86)\\IADOS Launcher\\games\\'
+  platformDefaults.installDirPathBase = homedir + '\\AppData\\Local\\IADOS Launcher\\games\\'
   platformDefaults.downloadDirPath = tempdir + '\\IADOS Launcher\\'
   break
 
