@@ -46,7 +46,7 @@
       </div><!-- /.menu-left -->
       <div class="vh-100 d-flex flex-grow-1 justify-items-center flex-column">
         <div id="top-bar" class="px-3 d-flex justify-content-center">
-          <input class="form-control w-25 m-1" placeholder="Search">
+          <input class="form-control w-25 m-1" placeholder="Search" disabled>
         </div>
         <div id="main-content" class="container-fluid overflow-auto rounded bg-white h-100">
           <!-- <app-header /> -->
