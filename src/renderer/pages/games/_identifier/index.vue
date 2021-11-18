@@ -11,10 +11,10 @@
               <span class="material-icons-outlined">visibility</span>&nbsp;{{ game.downloads.toLocaleString('en') }}×
             </small>
           </p>
-          <button v-if="isInstalled" class="btn btn-primary" @click="play()">
+          <button v-if="isInstalled && dosboxExePath" class="btn btn-primary" @click="play()">
             Play
           </button>
-          <button v-else class="btn btn-primary" :disabled="isDownloading" @click="download()">
+          <button v-if="!isInstalled && dosboxExePath" class="btn btn-primary" :disabled="isDownloading" @click="download()">
             <template v-if="!isDownloading">
               Install
             </template>
@@ -25,6 +25,14 @@
               ({{ Math.ceil(downloadedSize / totalSize * 100) }}%)
             </template>
           </button>
+          <button v-if="!isInstalled || !dosboxExePath" class="btn btn-outline-primary" @click="playOnline()">
+            Play online
+          </button>
+          <p v-if="!dosboxExePath">
+            <small class="text-muted">
+              <nuxt-link to="/welcome">Install DOSBox</nuxt-link> first to play offline.
+            </small>
+          </p>
         </div>
       </div>
     </div><!-- /.col -->
@@ -34,7 +42,7 @@
           <a :class="'nav-link ' + (showDescription ? 'active' : '')" aria-current="page" href="#" @click="showReviews = false; showDescription = true">Description</a>
         </li>
         <li class="nav-item">
-          <a :class="'nav-link ' + (showReviews ? 'active' : '') + (game.metadata.reviews.length === 0 ? 'disabled' : '')" href="#" @click="showReviews = true; showDescription = false">Reviews ({{ game.metadata.reviews.length }})</a>
+          <a :class="'nav-link ' + (showReviews ? 'active' : '') + (game.metadata.reviews && game.metadata.reviews.length ? '' : 'disabled')" href="#" @click="showReviews = true; showDescription = false">Reviews ({{ game.metadata.reviews && game.metadata.reviews.length ? game.metadata.reviews.length : '0' }})</a>
         </li>
       </ul>
       <div v-show="showDescription" id="description-wrapper" class="mt-3">
@@ -56,6 +64,13 @@
         </div>
       </div>
     </div><!-- /.col -->
+    <div v-else class="col placeholder-glow">
+      <span class="placeholder col-7" />
+      <span class="placeholder col-4" />
+      <span class="placeholder col-4" />
+      <span class="placeholder col-6" />
+      <span class="placeholder col-8" />
+    </div>
   </div><!-- /.row -->
 </template>
 
@@ -75,7 +90,8 @@ export default {
       downloadedSize: 0,
       totalSize: 1,
       showDescription: true,
-      showReviews: false
+      showReviews: false,
+      dosboxExePath: null
     }
   },
   fetch () {
@@ -99,6 +115,14 @@ export default {
   mounted () {
     console.log('game details page mounted')
     this.checkIfInstalled(this.$route.params.identifier)
+
+    // check DOSBox install and repeat every 2 seconds
+    this.checkDosboxInstallPath()
+    setInterval(() => {
+      if (this.dosboxFoundPath === null) {
+        this.checkDosboxInstallPath()
+      }
+    }, 2000)
   },
   methods: {
     ...mapMutations({
@@ -113,6 +137,9 @@ export default {
     },
     checkIfInstalled (identifier) {
       this.isInstalled = fs.existsSync(this.settings.installDirPathBase.value + identifier)
+    },
+    checkDosboxInstallPath () {
+      this.dosboxExePath = this.getDosboxInstallPath()
     },
     download () {
       // get file name
@@ -191,7 +218,7 @@ export default {
     play () {
       let cmd = ''
       if (require('os').platform() === 'win32') {
-        cmd = `"${this.settings.dosBoxExePath.value}" "${this.settings.installDirPathBase.value}${this.game.identifier}\\${this.game.metadata.metadata.emulator_start.replace('/', '\\')}" ${this.settings.dosBoxFlags.value.join(' ')}`
+        cmd = `"${this.settings.dosBoxExePath.value}" "${this.settings.installDirPathBase.value}${this.game.identifier}\\${this.game.metadata.metadata.emulator_start.replaceAll('/', '\\')}" ${this.settings.dosBoxFlags.value.join(' ')}`
       } else {
         cmd = `"${this.settings.dosBoxExePath.value}" "${this.settings.installDirPathBase.value}${this.game.identifier}/${this.game.metadata.metadata.emulator_start}" ${this.settings.dosBoxFlags.value.join(' ')}`
       }
@@ -208,6 +235,9 @@ export default {
         console.log(`stdout: ${stdout}`)
       }
       )
+    },
+    playOnline () {
+      this.openURL(`https://archive.org/details/${this.game.identifier}`)
     },
     parseReviewBody (reviewbody) {
       return '<p>' + reviewbody.replace('\n', '</p><p>') + '</p>'
