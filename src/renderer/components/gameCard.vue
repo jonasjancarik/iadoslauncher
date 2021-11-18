@@ -25,3 +25,13 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.game-card {
+  height: 1px; /* 1px height to allow for a relative min-height for the image - https://stackoverflow.com/a/21836870/1334688 */
+}
+.game-card .card-img-top {
+  min-height: 40%;
+  background-color: rgb(194, 194, 194);
+}
+</style>
