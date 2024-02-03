@@ -13,6 +13,12 @@ case 'win32':
   platformDefaults.downloadDirPath = tempdir + '\\IADOS Launcher\\'
   break
 
+case 'darwin':
+  platformDefaults.dosBoxExePath = '/Applications/DOSBox.app/Contents/MacOS/DOSBox'
+  platformDefaults.installDirPathBase = homedir + '/Library/Application Support/IADOS Launcher/games/'
+  platformDefaults.downloadDirPath = tempdir + '/IADOS Launcher/'
+  break
+
 default:
   platformDefaults.dosBoxExePath = 'dosbox'
   platformDefaults.installDirPathBase = homedir + '/.iadoslauncher/games/'
