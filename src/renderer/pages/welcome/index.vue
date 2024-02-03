@@ -132,6 +132,7 @@ export default
     },
     checkDosboxInstallPath () {
       this.dosboxExePath = this.getDosboxInstallPath()
+      console.log('dosboxExePath', this.dosboxExePath)
     },
     async tryInstallDosbox () {
       this.dosboxInstallRunning = true

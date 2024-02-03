@@ -1,4 +1,4 @@
-import { exec } from 'child_process'
+import { exec, execSync } from 'child_process'
 import Vue from 'vue'
 // import { remote } from 'electron'
 import { shell } from 'electron'
@@ -35,8 +35,17 @@ Vue.mixin({
         } else {
           return null
         }
+      } else if (platform === 'darwin') {
+        try {
+          const stdout = execSync(`ls ${this.settings.dosBoxExePath.value}`).toString()
+          console.log(`stdout: ${stdout}`)
+          return this.settings.dosBoxExePath.value
+        } catch (error) {
+          console.error(`execSync error: ${error.message}`)
+          return null
+        }
       } else {
-        exec(`which ${this.settings.dosBoxExePath.value}`, (error, stdout, stderr) => {
+        execSync(`which ${this.settings.dosBoxExePath.value}`, (error, stdout, stderr) => {
           if (error) {
             console.log(`error: ${error.message}`)
             return null
@@ -64,8 +73,18 @@ Vue.mixin({
               resolve(true)
             }
           })
+        } else if (platform === 'darwin') {
+          exec('brew info', (error, stdout, stderr) => {
+            if (error || stderr) {
+              console.log(`error: ${error ? error.message : stderr}`)
+              return false
+            } else if (stdout) {
+              console.log('Homebrew package manager available')
+              resolve(true)
+            }
+          })
         } else {
-          return true // todo: check for mac and linux
+          return true // todo: check for linux
         }
       })
     },
@@ -73,6 +92,19 @@ Vue.mixin({
       return new Promise((resolve, reject) => {
         if (platform === 'win32') {
           exec('winget install -e --id DOSBox.DOSBox', (error, stdout, stderr) => {
+            if (error) {
+              console.log(`error: ${error.message}`)
+              reject(error.message)
+            } else if (stderr) {
+              console.log(`stderr: ${stderr}`)
+              reject(stderr)
+            } else {
+              console.log(`stdout: ${stdout}`)
+              resolve(stdout)
+            }
+          })
+        } else if (platform === 'darwin') {
+          exec('brew install --cask dosbox', (error, stdout, stderr) => {
             if (error) {
               console.log(`error: ${error.message}`)
               reject(error.message)
