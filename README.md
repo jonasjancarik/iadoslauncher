@@ -2,6 +2,8 @@
 
 ## Build Setup
 
+Working with Node 20.
+
 ``` bash
 # install dependencies
 yarn install
@@ -22,8 +24,7 @@ This is a very early version, so a lot of stuff is missing.
 
 Anyway, here is a list of known issues which should be fixed as a matter of priority:
 
-- Installing and running games is untested on macOS
-- `-fullscreen` flag doesn't seem to work properly on Linux (Linux Mint 20.2) - game is not scaled; untested on macOS
+- `-fullscreen` flag doesn't seem to work properly on Linux (Linux Mint 20.2) and MacOS (Sonoma) - game is not scaled
 - Search is not implemented
 
 
