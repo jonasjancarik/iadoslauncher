@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "node --openssl-legacy-provider .electron-nuxt/dev.js",
-    "build": "node .electron-nuxt/build.js",
+    "build": "node --openssl-legacy-provider .electron-nuxt/build.js",
     "test": "",
     "lint": "node_modules/.bin/eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter ./src",
     "lint:fix": "yarn run lint -- --fix",
