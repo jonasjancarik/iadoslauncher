@@ -6,3 +6,4 @@ build/*
 !build/icons
 node_modules
 .vscode
+.DS_Store
