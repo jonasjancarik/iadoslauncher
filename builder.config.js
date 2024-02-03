@@ -49,7 +49,7 @@ module.exports = {
   directories: {
     output: 'build'
   },
-  allowToChangeInstallationDirectory: true,
+  // allowToChangeInstallationDirectory: true,
   // default files: https://www.electron.build/configuration/contents
   files: [
     'package.json',
