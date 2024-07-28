@@ -1,5 +1,7 @@
 # IADOS Launcher
 
+IADOS Launcher allows you to effortlessly browse, download, and play a vast collection of vintage DOS games directly from the Internet Archive, ensuring your game progress is always saved locally.
+
 ## Build Setup
 
 Working with Node 20.
