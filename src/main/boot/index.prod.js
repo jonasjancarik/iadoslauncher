@@ -4,7 +4,7 @@ import * as path from 'path'
 import { URL } from 'url'
 
 const PRODUCTION_APP_PROTOCOL = 'app'
-const PRODUCTION_APP_PATH = path.join(__dirname, '..', 'renderer')
+const PRODUCTION_APP_PATH = path.join(__dirname, '..', '..', 'renderer')
 
 
 // Scheme must be registered before the app is ready

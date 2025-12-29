@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Menu, MenuItem, app } from 'electron'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { ELECTRON_RELAUNCH_CODE } from '../../../.electron-nuxt/config'
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -22,7 +22,7 @@ app.on('ready', () => {
   menu.append(refreshButton)
   Menu.setApplicationMenu(menu)
 
-  installExtension(VUEJS_DEVTOOLS)
+  installExtension(REACT_DEVELOPER_TOOLS)
 })
 
 

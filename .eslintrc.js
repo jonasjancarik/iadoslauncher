@@ -6,11 +6,13 @@ module.exports = {
   },
   parserOptions: {
     sourceType: 'module',
-    parser: 'babel-eslint'
+    parser: 'babel-eslint',
+    ecmaFeatures: {
+      jsx: true
+    }
   },
   extends: [
-    '@nuxtjs'
-
+    'eslint:recommended'
   ],
   // add your custom rules here
   rules: {
@@ -30,7 +32,6 @@ module.exports = {
 
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
 
-    'vue/max-attributes-per-line': 'off',
-    'vue/singleline-html-element-content-newline': 0
+    'no-unused-vars': 'off'
   }
 }
