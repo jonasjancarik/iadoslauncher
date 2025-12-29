@@ -6,24 +6,24 @@ const platformDefaults = () => {
   const tempdir = os.tmpdir()
 
   switch (platform) {
-    case 'win32':
-      return {
-        dosBoxExePath: 'C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe',
-        installDirPathBase: `${homedir}\\AppData\\Local\\IADOS Launcher\\games\\`,
-        downloadDirPath: `${tempdir}\\IADOS Launcher\\`
-      }
-    case 'darwin':
-      return {
-        dosBoxExePath: '/Applications/DOSBox.app/Contents/MacOS/DOSBox',
-        installDirPathBase: `${homedir}/Library/Application Support/IADOS Launcher/games/`,
-        downloadDirPath: `${tempdir}/IADOS Launcher/`
-      }
-    default:
-      return {
-        dosBoxExePath: 'dosbox',
-        installDirPathBase: `${homedir}/.iadoslauncher/games/`,
-        downloadDirPath: '/tmp/iadoslauncher/'
-      }
+  case 'win32':
+    return {
+      dosBoxExePath: 'C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe',
+      installDirPathBase: `${homedir}\\AppData\\Local\\IADOS Launcher\\games\\`,
+      downloadDirPath: `${tempdir}\\IADOS Launcher\\`
+    }
+  case 'darwin':
+    return {
+      dosBoxExePath: '/Applications/DOSBox.app/Contents/MacOS/DOSBox',
+      installDirPathBase: `${homedir}/Library/Application Support/IADOS Launcher/games/`,
+      downloadDirPath: `${tempdir}/IADOS Launcher/`
+    }
+  default:
+    return {
+      dosBoxExePath: 'dosbox',
+      installDirPathBase: `${homedir}/.iadoslauncher/games/`,
+      downloadDirPath: '/tmp/iadoslauncher/'
+    }
   }
 }
 

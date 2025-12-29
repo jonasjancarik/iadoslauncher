@@ -59,7 +59,7 @@ const GameDetail = () => {
   const handleDownload = () => {
     if (!game.metadata?.files) return
 
-    const zipFile = game.metadata.files.find((file) => file.format === 'ZIP')
+    const zipFile = game.metadata.files.find(file => file.format === 'ZIP')
     if (!zipFile) return
 
     const fileName = zipFile.name
@@ -101,7 +101,7 @@ const GameDetail = () => {
     })
   }
 
-  const handleInstall = (filePath) => {
+  const handleInstall = filePath => {
     ipcRenderer.send('installGame', {
       filePath,
       installDirPathBase: state.settings.installDirPathBase.value,
@@ -147,7 +147,7 @@ const GameDetail = () => {
     openURL(`https://archive.org/details/${game.identifier}`)
   }
 
-  const parseReviewBody = (reviewBody) => {
+  const parseReviewBody = reviewBody => {
     if (!reviewBody) return ''
     return `<p>${reviewBody.replace('\n', '</p><p>')}</p>`
   }
@@ -257,7 +257,7 @@ const GameDetail = () => {
               />
             ) : (
               <div className="space-y-4 pt-4">
-                {game.metadata.reviews?.map((review) => (
+                {game.metadata.reviews?.map(review => (
                   <div key={review.createdate} className="rounded-xl border border-slate-200 bg-white p-4">
                     <h3 className="text-sm font-semibold text-slate-700">{review.reviewtitle}</h3>
                     <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">

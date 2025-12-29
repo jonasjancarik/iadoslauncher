@@ -18,7 +18,7 @@ const Installed = () => {
       }
 
       const identifiers = fs.readdirSync(installDir)
-      identifiers.forEach((identifier) => {
+      identifiers.forEach(identifier => {
         dispatch({
           type: 'USER_MARK_INSTALLED',
           payload: { identifier, source: 'filesystem' }
@@ -70,7 +70,7 @@ const Installed = () => {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-      {games.map((game) => (
+      {games.map(game => (
         <GameCard key={game.identifier} game={game} />
       ))}
     </div>

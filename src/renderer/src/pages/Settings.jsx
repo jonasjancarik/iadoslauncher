@@ -11,7 +11,7 @@ const Settings = () => {
   }, [state.settings])
 
   const handleChange = (key, value) => {
-    setSettings((prev) => ({
+    setSettings(prev => ({
       ...prev,
       [key]: {
         ...prev[key],
@@ -20,18 +20,18 @@ const Settings = () => {
     }))
   }
 
-  const handleSave = (event) => {
+  const handleSave = event => {
     event.preventDefault()
     const updated = { ...settings }
-    Object.keys(updated).forEach((key) => {
+    Object.keys(updated).forEach(key => {
       if (Array.isArray(updated[key].default) && typeof updated[key].value === 'string') {
-        updated[key].value = updated[key].value.split(',').map((item) => item.trim()).filter(Boolean)
+        updated[key].value = updated[key].value.split(',').map(item => item.trim()).filter(Boolean)
       }
     })
     dispatch({ type: 'SETTINGS_UPDATE', payload: updated })
   }
 
-  const handleDiscard = (event) => {
+  const handleDiscard = event => {
     event.preventDefault()
     setSettings(JSON.parse(JSON.stringify(state.settings)))
   }
@@ -58,7 +58,7 @@ const Settings = () => {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <input
                     value={Array.isArray(option.value) ? option.value.join(', ') : option.value}
-                    onChange={(event) => handleChange(key, event.target.value)}
+                    onChange={event => handleChange(key, event.target.value)}
                     className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                   />
                   <button

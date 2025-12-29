@@ -14,7 +14,7 @@ const Library = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Number(searchParams.get('page') || 1)
 
-  const updatePage = (nextPage) => {
+  const updatePage = nextPage => {
     setSearchParams({ page: String(nextPage) })
   }
 
@@ -52,7 +52,7 @@ const Library = () => {
         <div className="text-sm text-slate-500">Loading library…</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {games.map((game) => (
+          {games.map(game => (
             <GameCard key={game.identifier} game={game} />
           ))}
         </div>

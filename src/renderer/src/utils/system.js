@@ -3,11 +3,11 @@ const { shell } = window.require('electron')
 const fs = window.require('fs')
 const os = window.require('os')
 
-export const openURL = (url) => {
+export const openURL = url => {
   shell.openExternal(url)
 }
 
-export const getDosboxInstallPath = (settings) => {
+export const getDosboxInstallPath = settings => {
   const platform = os.platform()
   if (platform === 'win32') {
     const base = settings.dosBoxExePath.value.split('\\').slice(0, -2).join('\\')
@@ -16,8 +16,8 @@ export const getDosboxInstallPath = (settings) => {
     }
     const dosboxDirs = fs
       .readdirSync(base)
-      .filter((file) => file.toLowerCase().startsWith('dosbox'))
-      .map((file) => `${base}\\${file}`)
+      .filter(file => file.toLowerCase().startsWith('dosbox'))
+      .map(file => `${base}\\${file}`)
       .sort()
     if (!dosboxDirs.length) return null
     const newest = dosboxDirs[dosboxDirs.length - 1]

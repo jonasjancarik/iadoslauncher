@@ -1,6 +1,6 @@
 import React from 'react'
 
-const buildStars = (rating) => {
+const buildStars = rating => {
   const full = Math.floor(rating || 0)
   const half = Math.ceil((rating || 0) % 1)
   const empty = 5 - Math.ceil(rating || 0)
