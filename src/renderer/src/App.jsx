@@ -1,100 +1,144 @@
 import React from 'react'
-import { NavLink, Route, Routes, useNavigate } from 'react-router-dom'
+import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from './state/store'
-import GameDetail from './pages/GameDetail'
-import Installed from './pages/Installed'
-import Library from './pages/Library'
-import Settings from './pages/Settings'
+import { useTheme } from './state/ThemeContext'
 import Welcome from './pages/Welcome'
-
-const navLinkClasses = ({ isActive }) =>
-  `flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium transition ${
-    isActive
-      ? 'bg-slate-200 text-slate-700'
-      : 'text-slate-400 hover:bg-slate-200 hover:text-slate-600'
-  }`
+import Library from './pages/Library'
+import Installed from './pages/Installed'
+import Settings from './pages/Settings'
+import GameDetail from './pages/GameDetail'
 
 const Layout = ({ children }) => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { theme } = useTheme()
+
+  const isDos = theme === 'dos'
+
+  const navLinkClasses = ({ isActive }) => {
+    if (isDos) {
+      return `flex items-center gap-2 px-4 py-1 text-sm ${isActive ? 'bg-dos-yellow text-dos-black' : 'text-dos-white hover:bg-dos-gray hover:text-dos-black'}`
+    }
+    return `flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all ${isActive
+      ? 'bg-modern-accent text-white'
+      : 'text-modern-text-secondary hover:bg-modern-bg-hover hover:text-modern-text-primary'}`
+  }
 
   return (
-    <div className="flex h-screen bg-slate-100">
-      <aside className="flex w-16 flex-col items-center gap-4 border-r border-slate-200 bg-slate-100 py-4">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="rounded-lg p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-5 w-5"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-        <NavLink to="/library" className={navLinkClasses}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-5 w-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-            />
-          </svg>
-          <span>Library</span>
-        </NavLink>
-        <NavLink to="/installed" className={navLinkClasses}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-5 w-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 16.5v-9a2.25 2.25 0 0 0-2.25-2.25h-13.5A2.25 2.25 0 0 0 3 7.5v9m18 0v2.25A2.25 2.25 0 0 1 18.75 21h-13.5A2.25 2.25 0 0 1 3 18.75V16.5m18 0h-18"
-            />
-          </svg>
-          <span>Installed</span>
-        </NavLink>
-        <div className="mt-auto">
-          <NavLink to="/settings" className={navLinkClasses}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 16 16"
-              className="h-5 w-5"
-            >
-              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
-              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z" />
-            </svg>
-            <span>Settings</span>
-          </NavLink>
+    <div className={`flex h-screen flex-col overflow-hidden ${isDos
+        ? 'font-dos bg-dos-blue text-dos-white border-4 border-dos-blue'
+        : 'font-modern bg-modern-bg-dark text-modern-text-primary'
+      }`}>
+      {/* Top Menu Bar */}
+      <header className={`flex items-center justify-between px-4 py-2 text-sm ${isDos
+          ? 'bg-dos-gray text-dos-black border-b-2 border-dos-white'
+          : 'bg-modern-bg-surface border-b border-modern-border'
+        }`}>
+        <div className="flex gap-4 items-center">
+          <div className={`font-bold ${isDos ? 'px-2' : 'text-lg bg-gradient-to-r from-modern-accent to-modern-accent-light bg-clip-text text-transparent'}`}>
+            {isDos ? 'IADOS' : 'IADOS Launcher'}
+          </div>
+          {isDos && (
+            <>
+              <NavLink to="/library" className="px-2 hover:bg-dos-blue hover:text-dos-white">File</NavLink>
+              <NavLink to="/installed" className="px-2 hover:bg-dos-blue hover:text-dos-white">View</NavLink>
+              <NavLink to="/settings" className="px-2 hover:bg-dos-blue hover:text-dos-white">Options</NavLink>
+              <div className="px-2 hover:bg-dos-blue hover:text-dos-white cursor-pointer">Help</div>
+            </>
+          )}
         </div>
-      </aside>
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-center border-b border-slate-200 bg-white px-4 py-2">
-          <input
-            disabled
-            placeholder="Search"
-            className="w-64 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
-          />
-        </header>
-        <main className="flex-1 overflow-auto bg-white p-6 shadow-inner">{children}</main>
+        <div className={`text-xs uppercase ${isDos ? '' : 'text-modern-text-muted'}`}>
+          {new Date().toLocaleTimeString()}
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar / Left Panel */}
+        <aside className={`flex w-52 flex-col ${isDos
+            ? 'border-r-2 border-dos-white bg-dos-blue'
+            : 'bg-modern-bg-surface border-r border-modern-border'
+          }`}>
+          <div className={`p-3 text-xs font-bold uppercase tracking-wider ${isDos
+              ? 'text-dos-cyan border-b-2 border-dos-white mb-2'
+              : 'text-modern-text-muted border-b border-modern-border mb-2'
+            }`}>
+            Navigation
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className={`flex items-center gap-2 px-4 py-2 text-sm text-left ${isDos
+                ? 'text-dos-white hover:bg-dos-gray hover:text-dos-black'
+                : 'text-modern-text-secondary hover:bg-modern-bg-hover hover:text-modern-text-primary rounded-lg mx-2 transition-all'
+              }`}
+          >
+            <span>{isDos ? '[..] Up' : '← Back'}</span>
+          </button>
+          <NavLink to="/library" className={navLinkClasses}>
+            <span>{isDos ? 'Library' : '📚 Library'}</span>
+          </NavLink>
+          <NavLink to="/installed" className={navLinkClasses}>
+            <span>{isDos ? 'Installed' : '💾 Installed'}</span>
+          </NavLink>
+          <div className={`mt-auto ${isDos ? 'border-t-2 border-dos-white' : 'border-t border-modern-border pt-2'}`}>
+            <NavLink to="/settings" className={navLinkClasses}>
+              <span>{isDos ? 'Settings' : '⚙️ Settings'}</span>
+            </NavLink>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className={`flex flex-1 flex-col overflow-hidden p-2 ${isDos ? 'bg-dos-blue' : 'bg-modern-bg-dark'
+          }`}>
+          <main className={`flex-1 overflow-auto p-4 relative ${isDos
+              ? 'border-2 border-dos-white bg-dos-blue'
+              : 'bg-modern-bg-surface rounded-xl border border-modern-border'
+            }`}>
+            {isDos && (
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-dos-blue px-2 text-dos-white text-xs font-bold uppercase border-x-2 border-dos-white">
+                {location.pathname.split('/').pop() || 'HOME'}
+              </div>
+            )}
+            {children}
+          </main>
+        </div>
       </div>
+
+      {/* Bottom Status Bar */}
+      <footer className={`flex items-center gap-4 px-4 py-1 text-[10px] ${isDos
+          ? 'bg-dos-black text-dos-gray-bright border-t-2 border-dos-white'
+          : 'bg-modern-bg-surface text-modern-text-muted border-t border-modern-border'
+        }`}>
+        {isDos ? (
+          <>
+            <div className="flex gap-2">
+              <span className="text-dos-yellow">F1</span> Help
+            </div>
+            <div className="flex gap-2">
+              <span className="text-dos-yellow">F3</span> Search
+            </div>
+            <div className="flex gap-2">
+              <span className="text-dos-yellow">F5</span> Copy
+            </div>
+            <div className="flex gap-2">
+              <span className="text-dos-yellow">F8</span> Delete
+            </div>
+            <div className="flex gap-2">
+              <span className="text-dos-yellow">F10</span> Quit
+            </div>
+            <div className="ml-auto">C:\IADOS\SYSTEM{">"}</div>
+          </>
+        ) : (
+          <>
+            <div className="flex gap-4">
+              <span>Ready</span>
+            </div>
+            <div className="ml-auto text-modern-text-muted">
+              IADOS Launcher v1.0.0
+            </div>
+          </>
+        )}
+      </footer>
     </div>
   )
 }
@@ -169,7 +213,9 @@ const App = () => {
         path="*"
         element={
           <Layout>
-            <div className="text-sm text-slate-500">Page not found.</div>
+            <div className="text-sm font-bold" style={{ color: 'var(--color-error)' }}>
+              ERROR: Page not found.
+            </div>
           </Layout>
         }
       />
@@ -178,3 +224,4 @@ const App = () => {
 }
 
 export default App
+

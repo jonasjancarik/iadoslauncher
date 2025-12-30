@@ -1,72 +1,56 @@
 import React from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import Stars from '../components/Stars'
-import { selectGame, useStore } from '../state/store'
-import { getDosboxInstallPath, openURL } from '../utils/system'
+import { useStore } from '../state/store'
+import { useTheme } from '../state/ThemeContext'
 
-const fs = window.require('fs')
-const { ipcRenderer } = window.require('electron')
+const { ipcRenderer, shell } = window.require('electron')
 const { exec } = window.require('child_process')
+const fs = window.require('fs')
 
 const GameDetail = () => {
   const { identifier } = useParams()
   const { state, dispatch } = useStore()
-  const game = selectGame(state, identifier)
-  const [isDownloading, setIsDownloading] = React.useState(false)
-  const [isInstalled, setIsInstalled] = React.useState(false)
-  const [downloadedSize, setDownloadedSize] = React.useState(0)
-  const [totalSize, setTotalSize] = React.useState(1)
+  const { theme } = useTheme()
+  const [game, setGame] = React.useState(null)
+  const [metadataLoaded, setMetadataLoaded] = React.useState(false)
   const [showDescription, setShowDescription] = React.useState(true)
-  const [dosboxExePath, setDosboxExePath] = React.useState(null)
+  const [isDownloading, setIsDownloading] = React.useState(false)
+  const [totalSize, setTotalSize] = React.useState(1)
+  const [downloadedSize, setDownloadedSize] = React.useState(0)
+  const [isInstalled, setIsInstalled] = React.useState(false)
 
-  const metadataLoaded = Boolean(game && game.metadata && Object.keys(game.metadata).length)
+  const isDos = theme === 'dos'
+  const dosboxExePath = state.settings.dosBoxExePath?.value
 
   React.useEffect(() => {
-    if (!game) return
+    const fetchGame = async () => {
+      const response = await fetch(`https://archive.org/metadata/${identifier}`)
+      const data = await response.json()
+      setGame({ ...data, identifier })
+      setMetadataLoaded(true)
 
-    const fetchDetails = async () => {
-      if (metadataLoaded) return
-      try {
-        const response = await fetch(`https://archive.org/metadata/${identifier}`)
-        const data = await response.json()
-        dispatch({ type: 'METADATA_SET', payload: { identifier, metadata: data } })
-      } catch (error) {
-        console.error(error)
-      }
+      const isGameInstalled = Boolean(state.user.installed?.[identifier])
+      setIsInstalled(isGameInstalled)
     }
 
-    fetchDetails()
-  }, [dispatch, game, identifier, metadataLoaded])
+    fetchGame()
+  }, [identifier, state.user.installed])
 
-  React.useEffect(() => {
-    if (!game) return
-    setIsInstalled(fs.existsSync(`${state.settings.installDirPathBase.value}${identifier}`))
-  }, [game, identifier, state.settings.installDirPathBase.value])
-
-  React.useEffect(() => {
-    const checkDosbox = () => setDosboxExePath(getDosboxInstallPath(state.settings))
-    checkDosbox()
-    const interval = setInterval(() => {
-      if (!dosboxExePath) checkDosbox()
-    }, 2000)
-    return () => clearInterval(interval)
-  }, [dosboxExePath, state.settings])
-
-  if (!game) {
-    return <div className="text-sm text-slate-500">Loading game…</div>
-  }
+  if (!game) return (
+    <div className={`animate-pulse ${isDos ? 'text-dos-yellow' : 'text-modern-accent'}`}>
+      {isDos ? 'ACCESSING DATABASE...' : 'Loading game details...'}
+    </div>
+  )
 
   const handleDownload = () => {
-    if (!game.metadata?.files) return
+    const fileName = game.files.find(f => f.name.endsWith('.zip'))?.name
+    if (!fileName) return
 
-    const zipFile = game.metadata.files.find(file => file.format === 'ZIP')
-    if (!zipFile) return
-
-    const fileName = zipFile.name
-    const filePath = `${state.settings.downloadDirPath.value}${fileName}`
-
-    if (!fs.existsSync(state.settings.downloadDirPath.value)) {
-      fs.mkdirSync(state.settings.downloadDirPath.value)
+    const installDir = state.settings.installDirPathBase?.value || ''
+    const filePath = `${installDir}${fileName}`
+    if (!fs.existsSync(installDir)) {
+      fs.mkdirSync(installDir, { recursive: true })
     } else if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath)
     }
@@ -74,10 +58,7 @@ const GameDetail = () => {
     setIsDownloading(true)
     const downloadURL = `https://archive.org/download/${game.identifier}/${fileName}`
 
-    ipcRenderer.send('downloadFile', {
-      item: { downloadURL },
-      filePath
-    })
+    ipcRenderer.send('downloadFile', { item: { downloadURL }, filePath })
 
     const handleProgress = (_event, progressEvent) => {
       setTotalSize(parseInt(progressEvent.total, 10))
@@ -104,7 +85,7 @@ const GameDetail = () => {
   const handleInstall = filePath => {
     ipcRenderer.send('installGame', {
       filePath,
-      installDirPathBase: state.settings.installDirPathBase.value,
+      installDirPathBase: state.settings.installDirPathBase?.value,
       identifier: game.identifier
     })
 
@@ -120,168 +101,136 @@ const GameDetail = () => {
   }
 
   const handlePlay = () => {
-    const emulatorStart = game.metadata?.metadata?.emulator_start
+    const emulatorStart = game.metadata?.emulator_start
     if (!emulatorStart) return
 
     let cmd = ''
     if (window.require('os').platform() === 'win32') {
-      cmd = `"${state.settings.dosBoxExePath.value}" "${state.settings.installDirPathBase.value}${game.identifier}\\${emulatorStart.replaceAll('/', '\\')}" ${state.settings.dosBoxFlags.value.join(' ')}`
+      cmd = `"${state.settings.dosBoxExePath?.value}" "${state.settings.installDirPathBase?.value}${game.identifier}\\${emulatorStart.replaceAll('/', '\\')}"`
     } else {
-      cmd = `"${state.settings.dosBoxExePath.value}" "${state.settings.installDirPathBase.value}${game.identifier}/${emulatorStart}" ${state.settings.dosBoxFlags.value.join(' ')}`
+      cmd = `"${state.settings.dosBoxExePath?.value}" "${state.settings.installDirPathBase?.value}${game.identifier}/${emulatorStart}"`
     }
 
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`error: ${error.message}`)
-        return
-      }
-      if (stderr) {
-        console.error(`stderr: ${stderr}`)
-        return
-      }
-      console.log(`stdout: ${stdout}`)
-    })
+    exec(cmd, (error) => { if (error) console.error(error) })
   }
 
   const handlePlayOnline = () => {
-    openURL(`https://archive.org/details/${game.identifier}`)
+    shell.openExternal(`https://archive.org/details/${game.identifier}`)
   }
 
-  const parseReviewBody = reviewBody => {
-    if (!reviewBody) return ''
-    return `<p>${reviewBody.replace('\n', '</p><p>')}</p>`
-  }
+  const parseReviewBody = reviewBody => reviewBody ? reviewBody.replace(/\n/g, '<br/>') : ''
+
+  const downloadProgress = Math.ceil((downloadedSize / totalSize) * 100)
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-      <div className="space-y-4">
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <img
-            src={`https://archive.org/services/img/${game.identifier}`}
-            alt={game.title}
-            className="h-48 w-full rounded-t-xl object-cover"
-          />
-          <div className="space-y-3 p-4">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-800">{game.title}</h2>
-              <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                <span>{game.year}</span>
-                <Stars rating={game.avg_rating} ratingsCount={game.num_reviews} />
-              </div>
+    <div className={`flex flex-col h-full space-y-4 ${isDos ? 'text-dos-white' : 'text-modern-text-primary'}`}>
+      <div className={`flex items-center gap-4 pb-2 font-bold uppercase ${isDos ? 'border-b-2 border-dos-white text-dos-cyan' : 'border-b border-modern-border'}`}>
+        <span>{isDos ? 'FILE: ' : ''}{game.identifier}</span>
+        <span className={`ml-auto ${isDos ? 'text-dos-yellow' : ''}`}>
+          {isDos ? 'STATUS: ' : ''}
+          <span className={isInstalled ? (isDos ? 'text-dos-green-bright' : 'text-modern-success') : (isDos ? '' : 'text-modern-text-muted')}>
+            {isInstalled ? (isDos ? 'INSTALLED' : '✓ Installed') : (isDos ? 'REMOTE' : 'Not installed')}
+          </span>
+        </span>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[300px_1fr] flex-1 overflow-hidden">
+        <div className="space-y-4 overflow-auto">
+          <div className={`p-2 ${isDos ? 'dos-panel' : 'bg-modern-bg-surface rounded-xl border border-modern-border overflow-hidden'}`}>
+            <img
+              src={`https://archive.org/services/img/${game.identifier}`}
+              alt={game.metadata?.title}
+              className={`w-full object-cover ${isDos ? 'border-2 border-dos-white grayscale hover:grayscale-0 transition-all' : 'rounded-lg'}`}
+            />
+          </div>
+
+          <div className={`p-4 space-y-3 ${isDos ? 'dos-panel' : 'bg-modern-bg-surface rounded-xl border border-modern-border'}`}>
+            <h2 className={`font-bold uppercase ${isDos ? 'text-sm text-dos-yellow' : 'text-lg text-modern-text-primary'}`}>{game.metadata?.title}</h2>
+            <div className={`space-y-1 ${isDos ? 'text-[10px]' : 'text-sm text-modern-text-secondary'}`}>
+              <div className="flex justify-between"><span>{isDos ? 'YEAR:' : 'Year'}</span><span>{game.metadata?.year || 'Unknown'}</span></div>
+              <div className="flex justify-between"><span>{isDos ? 'PUBLISHER:' : 'Publisher'}</span><span className="truncate ml-2">{game.metadata?.creator || 'Unknown'}</span></div>
+              <div className="flex justify-between items-center"><span>{isDos ? 'RATING:' : 'Rating'}</span><Stars rating={game.metadata?.avg_rating} hideRating /></div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-4 w-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 12c0-1.059.916-2.014 2.08-2.205a9 9 0 0 1 15.34 0c1.164.191 2.08 1.146 2.08 2.205 0 1.059-.916 2.014-2.08 2.205a9 9 0 0 1-15.34 0C3.166 14.014 2.25 13.059 2.25 12z"
-                />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-              </svg>
-              <span>{game.downloads?.toLocaleString('en')}×</span>
+
+            <div className={`pt-2 space-y-2 ${isDos ? 'border-t border-dos-white' : 'border-t border-modern-border'}`}>
+              {isInstalled && dosboxExePath && (
+                <button type="button" className={`w-full font-bold ${isDos ? 'dos-button' : 'py-3 bg-gradient-to-r from-modern-success to-emerald-600 text-white rounded-lg'}`} onClick={handlePlay}>
+                  {isDos ? '[ RUN GAME ]' : '▶ Play Game'}
+                </button>
+              )}
+              {!isInstalled && dosboxExePath && (
+                <button type="button" className={`w-full font-bold disabled:opacity-50 ${isDos ? 'dos-button' : 'py-3 bg-gradient-to-r from-modern-accent to-purple-500 text-white rounded-lg'}`} disabled={isDownloading} onClick={handleDownload}>
+                  {isDownloading ? (isDos ? `READING: ${downloadProgress}%` : `Downloading ${downloadProgress}%`) : (isDos ? '[ INSTALL ]' : '↓ Install Game')}
+                </button>
+              )}
+              <button type="button" className={`w-full text-xs ${isDos ? 'dos-button' : 'py-2 bg-modern-bg-elevated hover:bg-modern-bg-hover text-modern-text-secondary rounded-lg'}`} onClick={handlePlayOnline}>
+                {isDos ? '[ VIEW ON WEB ]' : '🌐 Play in Browser'}
+              </button>
             </div>
-            {isInstalled && dosboxExePath && (
-              <button
-                type="button"
-                className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white"
-                onClick={handlePlay}
-              >
-                Play
-              </button>
-            )}
-            {!isInstalled && dosboxExePath && (
-              <button
-                type="button"
-                className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
-                disabled={isDownloading}
-                onClick={handleDownload}
-              >
-                {isDownloading ? `Downloading ${Math.ceil((downloadedSize / totalSize) * 100)}%` : 'Install'}
-              </button>
-            )}
-            {(!isInstalled || !dosboxExePath) && (
-              <button
-                type="button"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600"
-                onClick={handlePlayOnline}
-              >
-                Play online
-              </button>
-            )}
-            {!dosboxExePath && (
-              <p className="text-xs text-slate-500">
-                <Link className="text-blue-600" to="/welcome">
-                  Install DOSBox
-                </Link>{' '}
-                first to play offline.
-              </p>
-            )}
           </div>
         </div>
-      </div>
-      <div className="space-y-4">
-        {metadataLoaded ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex gap-4 border-b border-slate-200 pb-2 text-sm">
-              <button
-                type="button"
-                onClick={() => setShowDescription(true)}
-                className={`pb-2 ${
-                  showDescription ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-500'
+
+        <div className={`flex flex-col overflow-hidden ${isDos ? 'dos-panel bg-dos-blue' : 'bg-modern-bg-surface rounded-xl border border-modern-border'}`}>
+          <div className={`flex text-xs font-bold uppercase ${isDos ? 'bg-dos-gray text-dos-black' : 'bg-modern-bg-elevated border-b border-modern-border'}`}>
+            <button
+              onClick={() => setShowDescription(true)}
+              className={`px-4 py-2 transition-colors ${isDos
+                ? (showDescription ? 'bg-dos-blue text-dos-white' : 'hover:bg-dos-white')
+                : (showDescription ? 'text-modern-accent border-b-2 border-modern-accent bg-modern-bg-surface' : 'text-modern-text-muted hover:text-modern-text-primary')
                 }`}
-              >
-                Description
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowDescription(false)}
-                className={`pb-2 ${
-                  !showDescription ? 'border-b-2 border-blue-500 text-blue-600' : 'text-slate-500'
-                } ${game.metadata.reviews?.length ? '' : 'cursor-not-allowed opacity-40'}`}
-                disabled={!game.metadata.reviews?.length}
-              >
-                Reviews ({game.metadata.reviews?.length || 0})
-              </button>
-            </div>
+            >
+              {isDos ? 'Description.txt' : 'Description'}
+            </button>
+            <button
+              onClick={() => setShowDescription(false)}
+              className={`px-4 py-2 transition-colors ${isDos
+                ? (!showDescription ? 'bg-dos-blue text-dos-white' : 'hover:bg-dos-white')
+                : (!showDescription ? 'text-modern-accent border-b-2 border-modern-accent bg-modern-bg-surface' : 'text-modern-text-muted hover:text-modern-text-primary')
+                }`}
+            >
+              {isDos ? `Feedback.log (${game.reviews?.length || 0})` : `Reviews (${game.reviews?.length || 0})`}
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className={`flex-1 overflow-auto p-4 text-sm leading-relaxed ${isDos ? 'bg-dos-blue font-dos' : ''}`}>
             {showDescription ? (
               <div
-                className="pt-4 text-sm leading-relaxed text-slate-600"
-                dangerouslySetInnerHTML={{ __html: game.metadata.metadata?.description || '' }}
+                className={`prose max-w-none ${isDos ? 'prose-invert text-dos-white' : 'prose-slate dark:prose-invert text-modern-text-secondary'}`}
+                dangerouslySetInnerHTML={{ __html: game.metadata?.description || (isDos ? 'NO DESCRIPTION AVAILABLE' : 'No description available.') }}
               />
             ) : (
-              <div className="space-y-4 pt-4">
-                {game.metadata.reviews?.map(review => (
-                  <div key={review.createdate} className="rounded-xl border border-slate-200 bg-white p-4">
-                    <h3 className="text-sm font-semibold text-slate-700">{review.reviewtitle}</h3>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+              <div className="space-y-6">
+                {game.reviews?.map((review, idx) => (
+                  <div key={idx} className={`pb-4 last:border-0 ${isDos ? 'border-b border-dos-gray' : 'border-b border-modern-border'}`}>
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className={`font-bold uppercase ${isDos ? 'text-dos-yellow' : 'text-modern-text-primary'}`}>
+                        {review.reviewtitle}
+                      </h3>
                       <Stars rating={Number(review.stars)} hideRating />
-                      <span>{review.reviewer}</span>
-                      <span>{review.reviewdate}</span>
+                    </div>
+                    <div className={`text-[10px] mb-2 ${isDos ? 'text-dos-cyan' : 'text-modern-text-muted'}`}>
+                      {isDos ? 'BY:' : 'by'} {review.reviewer} | {isDos ? 'DATE:' : ''} {review.reviewdate}
                     </div>
                     <div
-                      className="pt-2 text-sm leading-relaxed text-slate-600"
+                      className={`text-xs italic ${isDos ? 'text-dos-white' : 'text-modern-text-secondary'}`}
                       dangerouslySetInnerHTML={{ __html: parseReviewBody(review.reviewbody) }}
                     />
                   </div>
                 ))}
+                {!game.reviews?.length && (
+                  <div className={isDos ? 'text-dos-gray' : 'text-modern-text-muted'}>
+                    {isDos ? 'NO REVIEWS FOUND' : 'No reviews yet.'}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        ) : (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="space-y-2 text-sm text-slate-400">Loading game metadata…</div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )
 }
 
 export default GameDetail
+

@@ -1,6 +1,10 @@
 import React from 'react'
+import { useTheme } from '../state/ThemeContext'
 
 const SystemInformation = () => {
+  const { theme } = useTheme()
+  const isDos = theme === 'dos'
+
   const versions = {
     chrome: process.versions.chrome,
     electron: process.versions.electron,
@@ -10,13 +14,19 @@ const SystemInformation = () => {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-700">System Information</h2>
-      <dl className="mt-4 space-y-2 text-sm">
+    <div>
+      <h2 className={`font-semibold ${isDos ? 'text-dos-cyan text-xs uppercase' : 'text-lg text-modern-text-primary'}`}>
+        {isDos ? 'SYSTEM DIAGNOSTICS' : 'System Information'}
+      </h2>
+      <dl className={`mt-4 space-y-2 text-sm ${isDos ? '' : ''}`}>
         {Object.entries(versions).map(([label, value]) => (
           <div key={label} className="flex justify-between gap-4">
-            <dt className="capitalize text-slate-500">{label}</dt>
-            <dd className="font-semibold text-slate-700">{value}</dd>
+            <dt className={`capitalize ${isDos ? 'text-dos-gray' : 'text-modern-text-muted'}`}>
+              {isDos ? label.toUpperCase() : label}
+            </dt>
+            <dd className={`font-semibold ${isDos ? 'text-dos-white' : 'text-modern-text-primary'}`}>
+              {value}
+            </dd>
           </div>
         ))}
       </dl>
@@ -25,3 +35,4 @@ const SystemInformation = () => {
 }
 
 export default SystemInformation
+

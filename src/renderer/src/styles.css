@@ -1,7 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+/* Theme CSS Variables */
+:root {
+  /* Default to DOS theme */
+  --color-bg: #0000AA;
+  --color-surface: #0000AA;
+  --color-surface-elevated: #0000AA;
+  --color-surface-hover: #AAAAAA;
+  --color-primary: #FFFF55;
+  --color-secondary: #55FFFF;
+  --color-text: #FFFFFF;
+  --color-text-muted: #AAAAAA;
+  --color-border: #FFFFFF;
+  --color-success: #55FF55;
+  --color-error: #FF5555;
+  --color-warning: #FFFF55;
+  --font-family: 'Fixedsys', monospace;
+  --border-radius: 0px;
+  --shadow: 4px 4px 0px 0px rgba(0,0,0,0.5);
+  --shadow-sm: 2px 2px 0px 0px rgba(0,0,0,0.5);
+  --transition: none;
 }
+
+.theme-dos {
+  --color-bg: #0000AA;
+  --color-surface: #0000AA;
+  --color-surface-elevated: #0000AA;
+  --color-surface-hover: #AAAAAA;
+  --color-primary: #FFFF55;
+  --color-secondary: #55FFFF;
+  --color-text: #FFFFFF;
+  --color-text-muted: #AAAAAA;
+  --color-border: #FFFFFF;
+  --color-success: #55FF55;
+  --color-error: #FF5555;
+  --color-warning: #FFFF55;
+  --font-family: 'Fixedsys', monospace;
+  --border-radius: 0px;
+  --shadow: 4px 4px 0px 0px rgba(0,0,0,0.5);
+  --shadow-sm: 2px 2px 0px 0px rgba(0,0,0,0.5);
+  --transition: none;
+}
+
+.theme-modern {
+  --color-bg: #0f0f1a;
+  --color-surface: #1a1a2e;
+  --color-surface-elevated: #252542;
+  --color-surface-hover: #2d2d4a;
+  --color-primary: #6366f1;
+  --color-secondary: #818cf8;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --border-radius: 8px;
+  --shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+  --transition: all 0.2s ease;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-family);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .theme-dos body {
+    image-rendering: pixelated;
+  }
+  
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-bg);
+  }
+}
+
+@layer components {
+  /* Panel Components */
+  .panel {
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+  
+  .panel-double {
+    background-color: var(--color-surface);
+    border: 4px double var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+
+  /* Button Components */
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+  }
+
+  .theme-dos .btn {
+    @apply bg-dos-gray text-dos-black px-4 py-1;
+  }
+  
+  .theme-dos .btn:hover {
+    @apply bg-dos-white;
+  }
+  
+  .theme-dos .btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+
+  .theme-modern .btn {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+  }
+  
+  .theme-modern .btn:hover {
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px -5px rgba(99, 102, 241, 0.5);
+  }
+  
+  .theme-modern .btn:active {
+    transform: translateY(0);
+  }
+
+  /* Card Components */
+  .card {
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+  }
+  
+  .theme-modern .card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 30px -10px rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* DOS-specific legacy classes for backwards compatibility */
+  .theme-dos .dos-panel {
+    @apply border-2 border-dos-white bg-dos-blue shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)];
+  }
+
+  .theme-dos .dos-panel-double {
+    @apply border-4 border-double border-dos-white bg-dos-blue shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)];
+  }
+
+  .theme-dos .dos-button {
+    @apply bg-dos-gray text-dos-black px-4 py-1 hover:bg-dos-white active:translate-x-0.5 active:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)];
+  }
+
+  .theme-dos .dos-text-shadow {
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Modern-specific panel styling */
+  .theme-modern .dos-panel,
+  .theme-modern .dos-panel-double {
+    @apply bg-modern-bg-surface border-modern-border rounded-lg;
+    box-shadow: var(--shadow);
+  }
+
+  .theme-modern .dos-button {
+    @apply px-4 py-2 rounded-lg font-semibold;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    transition: all 0.2s ease;
+  }
+
+  .theme-modern .dos-button:hover {
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px -5px rgba(99, 102, 241, 0.5);
+  }
+
+  .theme-modern .dos-text-shadow {
+    text-shadow: none;
+  }
+
+  /* Text utilities */
+  .text-primary {
+    color: var(--color-primary);
+  }
+  
+  .text-secondary {
+    color: var(--color-secondary);
+  }
+  
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+
+  /* Border utilities */
+  .border-themed {
+    border-color: var(--color-border);
+  }
+}
+

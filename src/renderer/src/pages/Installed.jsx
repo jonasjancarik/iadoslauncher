@@ -1,80 +1,67 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import GameCard from '../components/GameCard'
 import { useStore } from '../state/store'
-
-const fs = window.require('fs')
+import { useTheme } from '../state/ThemeContext'
 
 const Installed = () => {
-  const { state, dispatch } = useStore()
-  const [games, setGames] = React.useState([])
+  const { state } = useStore()
+  const { theme } = useTheme()
 
-  React.useEffect(() => {
-    const loadInstalled = async () => {
-      const installDir = state.settings.installDirPathBase.value
-      if (!fs.existsSync(installDir)) {
-        setGames([])
-        return
-      }
+  const isDos = theme === 'dos'
 
-      const identifiers = fs.readdirSync(installDir)
-      identifiers.forEach(identifier => {
-        dispatch({
-          type: 'USER_MARK_INSTALLED',
-          payload: { identifier, source: 'filesystem' }
-        })
-      })
-
-      const resolved = []
-      for (const identifier of identifiers) {
-        if (state.catalog.games[identifier]) {
-          resolved.push(state.catalog.games[identifier])
-        } else {
-          try {
-            const q = `collection:(softwarelibrary_msdos_games) AND identifier:(${identifier})`
-            const response = await fetch(
-              `https://archive.org/advancedsearch.php?q=${q}&sort[]=downloads desc&fl[]=avg_rating&fl[]=creator&fl[]=downloads&fl[]=genre&fl[]=identifier&fl[]=item_size&fl[]=language&fl[]=name&fl[]=num_reviews&fl[]=oai_updatedate&fl[]=publicdate&fl[]=title&fl[]=type&fl[]=year&rows=1&page=1&output=json`
-            )
-            const data = await response.json()
-            if (data.response.docs.length) {
-              const game = data.response.docs[0]
-              dispatch({ type: 'CATALOG_ADD_MANY', payload: [game] })
-              resolved.push(game)
-            }
-          } catch (error) {
-            console.error(error)
-          }
-        }
-      }
-
-      setGames(resolved)
-    }
-
-    loadInstalled()
-  }, [state.settings.installDirPathBase.value, dispatch])
-
-  if (!games.length) {
-    return (
-      <div className="space-y-2 text-sm text-slate-600">
-        <p>No games found in the install directory ({state.settings.installDirPathBase.value}).</p>
-        <p>
-          You can change the install directory location in the{' '}
-          <Link className="text-blue-600" to="/settings">
-            settings
-          </Link>
-          .
-        </p>
-      </div>
-    )
-  }
+  // Convert installed object to array with identifiers
+  const installedGames = Object.entries(state.user.installed || {}).map(([identifier, data]) => ({
+    identifier,
+    ...data
+  }))
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-      {games.map(game => (
-        <GameCard key={game.identifier} game={game} />
-      ))}
+    <div className={`flex flex-col h-full space-y-4 ${isDos ? 'text-dos-white' : 'text-modern-text-primary'}`}>
+      <div className={`flex items-center justify-between pb-2 ${isDos ? 'border-b-2 border-dos-white' : 'border-b border-modern-border'}`}>
+        <h2 className={`font-bold uppercase tracking-widest ${isDos ? 'text-dos-yellow' : 'text-xl text-modern-accent'}`}>
+          {isDos ? 'Local Drive [C:]' : 'Installed Games'}
+        </h2>
+        <div className={`text-xs ${isDos ? 'text-dos-cyan' : 'text-modern-text-muted'}`}>
+          {isDos
+            ? `Path: ${state.settings.installDirPathBase?.value || 'C:\\IADOS\\GAMES\\'}`
+            : `${installedGames.length} games installed`}
+        </div>
+      </div>
+
+      {installedGames.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className={`p-8 text-center space-y-4 max-w-md ${isDos
+              ? 'dos-panel'
+              : 'bg-modern-bg-surface rounded-xl border border-modern-border'
+            }`}>
+            <div className={`font-bold uppercase ${isDos ? 'text-dos-red-bright' : 'text-modern-text-muted text-lg'}`}>
+              {isDos ? 'Drive Empty' : 'No games installed'}
+            </div>
+            <p className={`text-xs ${isDos ? '' : 'text-modern-text-muted'}`}>
+              {isDos
+                ? 'No software installed in this sector. Proceed to Library to download games.'
+                : 'Browse the library to find and install games.'}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 overflow-auto pb-4">
+          {installedGames.map(game => (
+            <GameCard key={game.identifier} game={game} />
+          ))}
+        </div>
+      )}
+
+      <div className={`mt-auto pt-4 flex justify-between text-[10px] uppercase ${isDos
+          ? 'border-t-2 border-dos-white text-dos-cyan'
+          : 'border-t border-modern-border text-modern-text-muted'
+        }`}>
+        <span>{installedGames.length} {isDos ? 'file(s) found' : 'games'}</span>
+        <span>{isDos ? 'Free Space: 1.44 MB' : ''}</span>
+      </div>
     </div>
   )
 }
 
 export default Installed
+

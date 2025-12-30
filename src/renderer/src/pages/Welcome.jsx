@@ -1,167 +1,129 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useStore } from '../state/store'
-import { checkPackageManagerAvailability, getDosboxInstallPath, installDosbox, openURL } from '../utils/system'
+import { useTheme } from '../state/ThemeContext'
 
 const Welcome = () => {
   const { state, dispatch } = useStore()
-  const [dosboxExePath, setDosboxExePath] = React.useState(null)
-  const [installRunning, setInstallRunning] = React.useState(false)
-  const [installFailed, setInstallFailed] = React.useState(false)
-  const [packageManagerAvailable, setPackageManagerAvailable] = React.useState(null)
+  const navigate = useNavigate()
+  const { theme } = useTheme()
 
-  React.useEffect(() => {
-    let interval = null
-
-    const checkDosbox = () => {
-      const path = getDosboxInstallPath(state.settings)
-      setDosboxExePath(path)
-    }
-
-    checkDosbox()
-    interval = setInterval(() => {
-      if (!dosboxExePath) {
-        checkDosbox()
-      }
-    }, 2000)
-
-    checkPackageManagerAvailability()
-      .then(() => setPackageManagerAvailable(true))
-      .catch(() => setPackageManagerAvailable(false))
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [dosboxExePath, state.settings])
+  const isDos = theme === 'dos'
 
   const handleContinue = () => {
-    dispatch({ type: 'UI_SET_SHOW_WELCOME', payload: false })
-  }
-
-  const handleInstall = async () => {
-    setInstallRunning(true)
-    setInstallFailed(false)
-    try {
-      await installDosbox()
-      setDosboxExePath(getDosboxInstallPath(state.settings))
-    } catch (error) {
-      console.error(error)
-      setInstallFailed(true)
-    } finally {
-      setInstallRunning(false)
-    }
+    dispatch({ type: 'UI_HIDE_WELCOME' })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold text-slate-800">Welcome!</h1>
-        <p className="text-sm text-slate-600">Let's check a couple of things:</p>
-        {dosboxExePath ?
-          (
-            <p className="flex items-center gap-2 text-sm text-slate-600">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                ✓
-              </span>
-              DOSBox is installed in <code className="rounded bg-slate-100 px-2 py-1 text-xs">{dosboxExePath}</code>
-            </p>
+    <div className="flex flex-col items-center justify-center min-h-full space-y-8 py-8 animate-in fade-in zoom-in duration-500">
+      <div className={`p-8 max-w-2xl w-full text-center space-y-6 ${isDos
+          ? 'dos-panel-double'
+          : 'bg-modern-bg-surface rounded-2xl border border-modern-border shadow-2xl'
+        }`}>
+        <h1 className={`font-bold uppercase tracking-[0.2em] ${isDos
+            ? 'text-4xl text-dos-yellow dos-text-shadow'
+            : 'text-4xl bg-gradient-to-r from-modern-accent via-modern-accent-light to-purple-400 bg-clip-text text-transparent'
+          }`}>
+          IADOS LAUNCHER
+        </h1>
+        <div className={`text-xs ${isDos ? 'text-dos-cyan' : 'text-modern-text-muted'}`}>
+          Version 1.0.0 {isDos ? '(C) 2025 Janca Software' : '• Made with ❤️'}
+          <br />
+          {isDos ? 'All Rights Reserved' : 'Your gateway to classic DOS gaming'}
+        </div>
+
+        <div className={`my-4 ${isDos ? 'border-t-2 border-dos-white' : 'border-t border-modern-border'}`}></div>
+
+        <div className={`space-y-4 text-sm leading-relaxed ${isDos ? '' : 'text-modern-text-secondary'}`}>
+          <p>
+            Welcome to the <span className={isDos ? 'text-dos-yellow' : 'text-modern-accent font-semibold'}>Interactive Archive of DOS</span> (IADOS).
+          </p>
+          <p>
+            {isDos
+              ? 'This software allows you to browse, download, and play thousands of classic DOS games directly from the Internet Archive.'
+              : 'Browse, download, and play thousands of classic DOS games from the Internet Archive.'}
+          </p>
+        </div>
+
+        <div className={`p-4 inline-block text-left text-xs font-mono ${isDos
+            ? 'bg-dos-black border border-dos-white'
+            : 'bg-modern-bg-dark rounded-lg border border-modern-border w-full'
+          }`}>
+          <span className={isDos ? 'text-dos-green-bright' : 'text-modern-success'}>
+            {isDos ? 'C:\\>' : '$'}
+          </span> {isDos ? 'CHECK_SYSTEM.EXE' : 'system-check'}
+          <br />
+          <span className={isDos ? 'text-dos-white' : 'text-modern-text-primary'}>DOSBox status: </span>
+          {state.settings.dosBoxExePath?.value ? (
+            <span className={isDos ? 'text-dos-green-bright' : 'text-modern-success'}>
+              {isDos ? 'READY' : '✓ Ready'}
+            </span>
           ) : (
-            <div className="space-y-2 text-sm text-slate-600">
-              <p className="flex items-center gap-2">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-rose-600">
-                  ✕
-                </span>
-                DOSBox doesn't seem to be installed.
-              </p>
-              {packageManagerAvailable !== null && (
-                <div className="space-y-2">
-                  {packageManagerAvailable ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-                        disabled={installRunning}
-                        onClick={handleInstall}
-                      >
-                        {installRunning ? 'Installing...' : 'Install DOSBox'}
-                      </button>
-                      {installFailed && (
-                        <span>
-                          Installation failed. Try again or install DOSBox{' '}
-                          <button
-                            type="button"
-                            className="text-blue-600 underline"
-                            onClick={() => openURL('https://www.dosbox.com/download.php?main=1')}
-                          >
-                            manually
-                          </button>
-                          .
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>
-                        Install{' '}
-                        <button
-                          type="button"
-                          className="text-blue-600 underline"
-                          onClick={() => openURL('https://www.dosbox.com/download.php?main=1')}
-                        >
-                          DOSBox
-                        </button>{' '}
-                        first.
-                      </span>
-                      <button
-                        type="button"
-                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600"
-                        onClick={() => setDosboxExePath(getDosboxInstallPath(state.settings))}
-                      >
-                        Check again
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            <span className={isDos ? 'text-dos-red-bright' : 'text-modern-error'}>
+              {isDos ? 'NOT FOUND' : '✗ Not configured'}
+            </span>
           )}
-        <p className="text-sm text-slate-600">
-          Games will be installed to{' '}
-          <code className="rounded bg-slate-100 px-2 py-1 text-xs">{state.settings.installDirPathBase.value}</code>
-        </p>
-      </div>
-      <div className="space-y-2">
-        {dosboxExePath ? (
-          <Link
-            to="/library?page=1"
-            className="inline-flex rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white"
-            onClick={handleContinue}
-          >
-            Good to go!
-          </Link>
-        ) : (
-          <div className="space-y-2">
+          <br />
+          <span className={isDos ? 'text-dos-white' : 'text-modern-text-primary'}>Memory: </span>
+          <span className={isDos ? 'text-dos-cyan' : 'text-modern-secondary'}>
+            {isDos ? '640K Base / 32M Extended' : 'Unlimited virtual'}
+          </span>
+        </div>
+
+        <div className="pt-4 space-y-4">
+          {state.settings.dosBoxExePath?.value ? (
             <Link
               to="/library?page=1"
-              className="inline-flex rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white"
+              className={`inline-block font-bold ${isDos
+                  ? 'dos-button text-lg'
+                  : 'px-8 py-3 bg-gradient-to-r from-modern-accent to-purple-500 hover:from-modern-accent-light hover:to-purple-400 text-white rounded-xl shadow-lg hover:shadow-xl transition-all text-lg'
+                }`}
               onClick={handleContinue}
             >
-              Continue without DOSBox
+              {isDos ? '[ RUN SYSTEM ]' : 'Get Started →'}
             </Link>
-            <p className="text-xs text-slate-500">
-              You will be able to browse the library and open games in the browser, but you won't be able to save your
-              progress or play offline. You can still install DOSBox later, though.
-            </p>
+          ) : (
+            <div className="space-y-4">
+              <div className={`text-xs px-4 ${isDos ? 'text-dos-red-bright' : 'text-modern-warning'}`}>
+                {isDos
+                  ? 'WARNING: DOSBox path not configured. Some features may be restricted.'
+                  : '⚠️ DOSBox not configured. Some features may be limited.'}
+              </div>
+              <Link
+                to="/library?page=1"
+                className={`inline-block ${isDos
+                    ? 'dos-button'
+                    : 'px-6 py-2 bg-modern-bg-elevated hover:bg-modern-bg-hover text-modern-text-primary rounded-lg transition-colors'
+                  }`}
+                onClick={handleContinue}
+              >
+                {isDos ? 'Launch Limited Mode' : 'Continue Anyway'}
+              </Link>
+            </div>
+          )}
+
+          <div className="flex justify-center gap-4">
+            <Link
+              to="/settings"
+              className={`text-xs underline ${isDos ? 'text-dos-cyan hover:text-dos-white' : 'text-modern-text-muted hover:text-modern-accent transition-colors'}`}
+            >
+              {isDos ? '[ SETTINGS ]' : 'Settings'}
+            </Link>
+            <div className={`text-xs underline cursor-pointer ${isDos ? 'text-dos-cyan hover:text-dos-white' : 'text-modern-text-muted hover:text-modern-accent transition-colors'}`}>
+              {isDos ? '[ README.TXT ]' : 'About'}
+            </div>
           </div>
-        )}
+        </div>
       </div>
-      <div>
-        <Link to="/settings" className="inline-flex rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600">
-          Change settings
-        </Link>
-      </div>
+
+      {isDos && (
+        <div className="text-[10px] text-dos-gray uppercase tracking-widest">
+          Wait for system initialization...
+        </div>
+      )}
     </div>
   )
 }
 
 export default Welcome
+
