@@ -69,77 +69,77 @@ const loadState = () => {
 
 const reducer = (state, action) => {
   switch (action.type) {
-  case 'CATALOG_ADD_MANY': {
-    const next = { ...state.catalog.games }
-    action.payload.forEach(game => {
-      next[game.identifier] = game
-    })
-    return {
-      ...state,
-      catalog: {
-        ...state.catalog,
-        games: next
+    case 'CATALOG_ADD_MANY': {
+      const next = { ...state.catalog.games }
+      action.payload.forEach(game => {
+        next[game.identifier] = game
+      })
+      return {
+        ...state,
+        catalog: {
+          ...state.catalog,
+          games: next
+        }
       }
     }
-  }
-  case 'METADATA_SET': {
-    return {
-      ...state,
-      metadata: {
-        ...state.metadata,
-        [action.payload.identifier]: action.payload.metadata
+    case 'METADATA_SET': {
+      return {
+        ...state,
+        metadata: {
+          ...state.metadata,
+          [action.payload.identifier]: action.payload.metadata
+        }
       }
     }
-  }
-  case 'USER_MARK_INSTALLED': {
-    return {
-      ...state,
-      user: {
-        ...state.user,
-        installed: {
-          ...state.user.installed,
-          [action.payload.identifier]: {
-            installedAt: action.payload.installedAt || new Date().toISOString(),
-            source: action.payload.source || 'user'
+    case 'USER_MARK_INSTALLED': {
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          installed: {
+            ...state.user.installed,
+            [action.payload.identifier]: {
+              installedAt: action.payload.installedAt || new Date().toISOString(),
+              source: action.payload.source || 'user'
+            }
           }
         }
       }
     }
-  }
-  case 'USER_MARK_UNINSTALLED': {
-    const next = { ...state.user.installed }
-    delete next[action.payload.identifier]
-    return {
-      ...state,
-      user: {
-        ...state.user,
-        installed: next
+    case 'USER_MARK_UNINSTALLED': {
+      const next = { ...state.user.installed }
+      delete next[action.payload.identifier]
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          installed: next
+        }
       }
     }
-  }
-  case 'SETTINGS_UPDATE': {
-    return {
-      ...state,
-      settings: {
-        ...state.settings,
-        ...action.payload
+    case 'SETTINGS_UPDATE': {
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          ...action.payload
+        }
       }
     }
-  }
-  case 'UI_SET_SHOW_WELCOME': {
-    return {
-      ...state,
-      ui: {
-        ...state.ui,
-        showWelcome: action.payload
+    case 'UI_SET_SHOW_WELCOME': {
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          showWelcome: action.payload
+        }
       }
     }
-  }
-  case 'RESET_STATE': {
-    return initialState
-  }
-  default:
-    return state
+    case 'RESET_STATE': {
+      return initialState
+    }
+    default:
+      return state
   }
 }
 

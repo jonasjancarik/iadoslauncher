@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "node --openssl-legacy-provider .electron-nuxt/dev.js",
+    "dev:web": "vite",
     "build": "node --openssl-legacy-provider .electron-nuxt/build.js",
     "test": "",
     "lint": "node_modules/.bin/eslint --ext .js,.jsx -f ./node_modules/eslint-friendly-formatter ./src",
