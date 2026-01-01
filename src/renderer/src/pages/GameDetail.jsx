@@ -104,11 +104,15 @@ const GameDetail = () => {
     const emulatorStart = game.metadata?.emulator_start
     if (!emulatorStart) return
 
+    const flags = Array.isArray(state.settings.dosBoxFlags?.value)
+      ? state.settings.dosBoxFlags.value.join(' ')
+      : (state.settings.dosBoxFlags?.value || '')
+
     let cmd = ''
     if (window.require('os').platform() === 'win32') {
-      cmd = `"${state.settings.dosBoxExePath?.value}" "${state.settings.installDirPathBase?.value}${game.identifier}\\${emulatorStart.replaceAll('/', '\\')}"`
+      cmd = `"${state.settings.dosBoxExePath?.value}" "${state.settings.installDirPathBase?.value}${game.identifier}\\${emulatorStart.replaceAll('/', '\\')}" ${flags}`
     } else {
-      cmd = `"${state.settings.dosBoxExePath?.value}" "${state.settings.installDirPathBase?.value}${game.identifier}/${emulatorStart}"`
+      cmd = `"${state.settings.dosBoxExePath?.value}" "${state.settings.installDirPathBase?.value}${game.identifier}/${emulatorStart}" ${flags}`
     }
 
     exec(cmd, (error) => { if (error) console.error(error) })
