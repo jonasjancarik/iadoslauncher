@@ -12,21 +12,21 @@ const Pagination = ({ page, totalPages, onChange }) => {
           onClick={() => onChange(Math.max(1, page - 1))}
           disabled={page === 1}
           className={`disabled:opacity-30 ${isDos
-              ? 'dos-button'
-              : 'px-4 py-2 bg-modern-bg-elevated hover:bg-modern-bg-hover rounded-lg transition-colors disabled:hover:bg-modern-bg-elevated'
+            ? 'dos-button'
+            : 'px-6 py-2 bg-modern-bg-elevated hover:bg-modern-accent hover:text-white rounded-xl transition-all font-semibold shadow-sm hover:shadow-md disabled:hover:bg-modern-bg-elevated disabled:hover:text-modern-text-secondary active:scale-95'
             }`}
         >
-          {isDos ? '< PREV' : '← Previous'}
+          {isDos ? '< PREV' : 'Previous'}
         </button>
         <button
           onClick={() => onChange(Math.min(totalPages, page + 1))}
           disabled={page === totalPages}
           className={`disabled:opacity-30 ${isDos
-              ? 'dos-button'
-              : 'px-4 py-2 bg-modern-bg-elevated hover:bg-modern-bg-hover rounded-lg transition-colors disabled:hover:bg-modern-bg-elevated'
+            ? 'dos-button'
+            : 'px-6 py-2 bg-modern-bg-elevated hover:bg-modern-accent hover:text-white rounded-xl transition-all font-semibold shadow-sm hover:shadow-md disabled:hover:bg-modern-bg-elevated disabled:hover:text-modern-text-secondary active:scale-95'
             }`}
         >
-          {isDos ? 'NEXT >' : 'Next →'}
+          {isDos ? 'NEXT >' : 'Next'}
         </button>
       </div>
 
@@ -45,9 +45,9 @@ const Pagination = ({ page, totalPages, onChange }) => {
               <button
                 key={p}
                 onClick={() => onChange(p)}
-                className={`px-2 py-0.5 ${isDos
-                    ? `border ${p === page ? 'bg-dos-yellow text-dos-black border-dos-white' : 'border-dos-gray text-dos-gray hover:text-dos-white'}`
-                    : `rounded ${p === page ? 'bg-modern-accent text-white' : 'bg-modern-bg-elevated text-modern-text-muted hover:bg-modern-bg-hover'}`
+                className={`w-8 h-8 flex items-center justify-center transition-all ${isDos
+                  ? `border ${p === page ? 'bg-dos-yellow text-dos-black border-dos-white' : 'border-dos-gray text-dos-gray hover:text-dos-white'}`
+                  : `rounded-lg font-medium ${p === page ? 'bg-modern-accent text-white shadow-lg shadow-modern-accent/30 scale-110' : 'bg-modern-bg-elevated text-modern-text-secondary hover:bg-modern-bg-hover hover:text-modern-text-primary'}`
                   }`}
               >
                 {p}

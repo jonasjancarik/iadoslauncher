@@ -10,8 +10,11 @@ const Settings = () => {
 
   const isDos = theme === 'dos'
 
-  const handleChange = (key, value) => {
-    setFormValues(prev => ({ ...prev, [key]: value }))
+  const handleChange = (key, newValue) => {
+    setFormValues(prev => ({
+      ...prev,
+      [key]: { ...prev[key], value: newValue }
+    }))
   }
 
   const handleSubmit = e => {
@@ -65,14 +68,14 @@ const Settings = () => {
               type="button"
               onClick={toggleTheme}
               className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors ${isDos
-                  ? 'bg-dos-gray border-2 border-dos-white'
-                  : (theme === 'modern' ? 'bg-modern-accent' : 'bg-modern-bg-elevated')
+                ? 'bg-dos-gray border-2 border-dos-white'
+                : (theme === 'modern' ? 'bg-modern-accent' : 'bg-modern-bg-elevated')
                 }`}
             >
               <span
                 className={`inline-block h-6 w-6 transform rounded-full transition-transform ${isDos
-                    ? 'bg-dos-yellow translate-x-1'
-                    : (theme === 'modern' ? 'bg-white translate-x-9' : 'bg-modern-text-muted translate-x-1')
+                  ? 'bg-dos-yellow translate-x-1'
+                  : (theme === 'modern' ? 'bg-white translate-x-9' : 'bg-modern-text-muted translate-x-1')
                   }`}
               />
             </button>
@@ -95,11 +98,11 @@ const Settings = () => {
                 </label>
                 <input
                   type="text"
-                  value={value}
+                  value={value?.value || ''}
                   onChange={e => handleChange(key, e.target.value)}
                   className={`px-3 py-2 text-sm outline-none transition-colors ${isDos
-                      ? 'bg-dos-black border border-dos-white text-dos-white focus:bg-dos-gray focus:text-dos-black'
-                      : 'bg-modern-bg-elevated border border-modern-border text-modern-text-primary rounded-lg focus:border-modern-accent'
+                    ? 'bg-dos-black border border-dos-white text-dos-white focus:bg-dos-gray focus:text-dos-black'
+                    : 'bg-modern-bg-elevated border border-modern-border text-modern-text-primary rounded-lg focus:border-modern-accent'
                     }`}
                 />
               </div>
@@ -134,8 +137,8 @@ const Settings = () => {
             <button
               type="button"
               className={`whitespace-nowrap ${isDos
-                  ? 'dos-button bg-dos-red-bright text-dos-white'
-                  : 'px-4 py-2 bg-modern-error hover:bg-red-600 text-white rounded-lg transition-colors'
+                ? 'dos-button bg-dos-red-bright text-dos-white'
+                : 'px-4 py-2 bg-modern-error hover:bg-red-600 text-white rounded-lg transition-colors'
                 }`}
               onClick={clearLocalStorage}
             >

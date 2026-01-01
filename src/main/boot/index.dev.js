@@ -23,6 +23,8 @@ app.on('ready', () => {
   Menu.setApplicationMenu(menu)
 
   installExtension(REACT_DEVELOPER_TOOLS)
+    .then((name) => console.log(`Installed extension: ${name}`))
+    .catch((err) => console.warn('Failed to install React DevTools:', err.message))
 })
 
 
