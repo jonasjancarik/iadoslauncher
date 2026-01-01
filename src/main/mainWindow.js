@@ -2,8 +2,8 @@ import { ipcMain } from 'electron'
 import BrowserWinHandler from './BrowserWinHandler'
 const fs = require('fs')
 const path = require('path')
-const axios = require('axios')
-const yauzl = require('yauzl')
+import axios from 'axios'
+import yauzl from 'yauzl'
 
 const winHandler = new BrowserWinHandler({
   height: 600,
@@ -28,25 +28,39 @@ ipcMain.on('downloadFile', function (event, data) {
     url: item.downloadURL,
     responseType: 'stream'
   }).then(response => {
-    response.data.pipe(fs.createWriteStream(filePath))
+    const writer = fs.createWriteStream(filePath)
+    response.data.pipe(writer)
+
     const totalSize = response.headers['content-length']
     let downloaded = 0
+
     response.data.on('data', data => {
       downloaded += Buffer.byteLength(data)
       event.sender.send('downloadProgress', { total: totalSize, loaded: downloaded })
     })
-    response.data.on('end', () => {
+
+    writer.on('finish', () => {
+      console.log('Download finished and file saved.')
       event.sender.send('downloadEnd')
     })
+
+    writer.on('error', error => {
+      console.error('Writer error:', error)
+      event.sender.send('downloadError', error)
+    })
+
     response.data.on('error', error => {
+      console.error('Response stream error:', error)
       event.sender.send('downloadError', error)
     })
   }).catch(error => {
+    console.error('Axios error:', error)
     event.sender.send('downloadError', error)
   })
 })
 
 ipcMain.on('installGame', function (event, data) {
+  console.log('Installing game: ' + data.identifier)
   if (!fs.existsSync(data.installDirPathBase)) {
     try {
       fs.mkdirSync(data.installDirPathBase, { recursive: true })
@@ -57,41 +71,69 @@ ipcMain.on('installGame', function (event, data) {
     }
   }
 
-  yauzl.open(data.filePath, function (err, zipfile) {
-    if (err) throw err
+  yauzl.open(data.filePath, { lazyEntries: true }, function (err, zipfile) {
+    if (err) {
+      console.error('Yauzl open error:', err)
+      event.sender.send('installError', err)
+      return
+    }
+
+    let entriesHandled = 0
+    let entriesFinished = 0
+    let isClosed = false
+
+    const checkFinished = () => {
+      if (isClosed && entriesFinished === entriesHandled) {
+        console.log('Installation fully complete.')
+        event.sender.send('installEnd')
+      }
+    }
+
+    zipfile.readEntry()
+
+    zipfile.on('entry', function (entry) {
+      entriesHandled++
+      const filePath = path.join(data.installDirPathBase, data.identifier, entry.fileName)
+      const dirname = path.dirname(filePath)
+
+      if (/\/$/.test(entry.fileName)) {
+        // Directory
+        if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true })
+        entriesFinished++
+        zipfile.readEntry()
+      } else {
+        // File
+        if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true })
+        zipfile.openReadStream(entry, function (error, readStream) {
+          if (error) {
+            console.error('ReadStream error:', error)
+            event.sender.send('installError', error)
+            return
+          }
+          const writer = fs.createWriteStream(filePath)
+          readStream.pipe(writer)
+          writer.on('finish', () => {
+            entriesFinished++
+            zipfile.readEntry()
+            checkFinished()
+          })
+          writer.on('error', (err) => {
+            console.error('Unzip writer error:', err)
+            event.sender.send('installError', err)
+          })
+        })
+      }
+    })
+
     zipfile.on('error', function (error) {
+      console.error('Zipfile error:', error)
       event.sender.send('installError', error)
     })
-    zipfile.on('entry', function (entry) {
-      // console.log(entry)
-      // console.log(entry.getLastModDate())
-      console.log(entry.fileName)
-      zipfile.openReadStream(entry, function (error, readStream) {
-        if (error) {
-          event.sender.send('installError', error)
-        } else {
-          const filePath = data.installDirPathBase + data.identifier + '/' + entry.fileName
-          const dirname = path.dirname(filePath)
-          console.log(JSON.stringify({ filePath, dirname }))
-          if (!entry.fileName.endsWith('/')) {
-            // it's a file, not a directory
-            if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true })
-            console.log('Unzipping to ' + filePath)
-            try {
-              readStream.pipe(fs.createWriteStream(filePath))
-            } catch (error) {
-              console.log(error)
-            }
-          } else if (!fs.existsSync(filePath)) {
-            // just create the directory
-            fs.mkdirSync(filePath, { recursive: true })
-          }
-        }
-      })
-    })
+
     zipfile.on('close', function () {
-      console.log('Installed.')
-      event.sender.send('installEnd')
+      isClosed = true
+      console.log('Zip file closed. Waiting for finish...')
+      checkFinished()
     })
   })
 })
